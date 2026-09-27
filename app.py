@@ -21,7 +21,7 @@ html_template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة إشكور مرسين - فرص العمل اليومية</title>
+    <title>منصة مرسين للخدمات - فرص العمل اليومية</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -143,15 +143,17 @@ html_template = """
 <body>
 
     <header>
-        <h1>فرص العمل في مرسين (İşkur Mersin)</h1>
-        <p>البوابة الرسمية لجلب أحدث الوظائف فور نشرها</p>
+        <h1>منصة مرسين للخدمات</h1>
+        <p>البوابة الرسمية لجلب أحدث الوظائف والخدمات في مرسين</p>
     </header>
 
     <div class="container">
+        <!-- 💰 مساحة إعلانية علوية -->
         <div class="ad-banner">
             <span>[مساحة إعلانية - AdBanner Header]</span>
         </div>
 
+        <!-- شريط التحكم والتصفية -->
         <div class="controls-bar">
             <div class="filter-buttons">
                 <button class="filter-btn active" onclick="filterJobs('all', this)">الكل</button>
@@ -166,6 +168,7 @@ html_template = """
             <p style="text-align: center; color: #64748b;">جاري تحميل أحدث الوظائف...</p>
         </div>
 
+        <!-- 💰 مساحة إعلانية سفلية -->
         <div class="ad-banner" style="margin-top: 2rem;">
             <span>[مساحة إعلانية - AdBanner Footer]</span>
         </div>
@@ -201,7 +204,7 @@ html_template = """
                     <div>${job.details}</div>
                     <div class="job-time">📅 وقت النشر: ${job.timestamp}</div>
                     <div class="job-actions">
-                        <a href="https://wa.me/?text=` + encodeURIComponent('فرصة عمل جديدة في مرسين:\n' + job.title + '\n' + job.details) + `" class="btn-action btn-share" target="_blank">📤 مشاركة الإعلان</a>
+                        <a href="https://wa.me/?text=` + encodeURIComponent('فرصة عمل جديدة عبر منصة مرسين للخدمات:\n' + job.title + '\n' + job.details) + `" class="btn-action btn-share" target="_blank">📤 مشاركة الإعلان</a>
                         <a href="https://wa.me/" class="btn-action" target="_blank">💬 التواصل السريع</a>
                     </div>
                 `;

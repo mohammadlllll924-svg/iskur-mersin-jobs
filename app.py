@@ -1,17 +1,14 @@
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template_string, request
 
 app = Flask(__name__)
 
-jobs_data = [
+# قائمة ديناميكية لتخزين الخدمات (تتحدث فوراً عند استلام بيانات من واتساب)
+services_data = [
     {
-        "title": "مطلوب شيف مشويات كفء للعمل في مطعم بمرسين",
-        "details": "الموقع: مركز مرسين (مزيتلي).\nالخبرة: سنتان على الأقل.\nالراتب: جيد ويقاس بالمقابلة.",
-        "timestamp": "اليوم - 12:00 م"
-    },
-    {
-        "title": "مطلوب موظف مبيعات وتسويق",
-        "details": "الموقع: مرسين - مركز المدينة.\nالمتطلبات: إجادة اللغة التركية.",
-        "timestamp": "اليوم - 10:30 ص"
+        "title": "مكتب خدمات إقامات وتثبيت نفوس",
+        "category": "معاملات",
+        "details": "الموقع: مركز مرسين (شارع أتاتورك).\nالخدمات: حجز مواعيد إقامات، تثبيت عنوان النفوس.",
+        "timestamp": "محدث اليوم"
     }
 ]
 
@@ -21,7 +18,7 @@ html_template = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة مرسين للخدمات - فرص العمل اليومية</title>
+    <title>منصة مرسين للخدمات - الدليل الشامل</title>
     <style>
         :root {
             --primary-color: #2563eb;
@@ -144,7 +141,7 @@ html_template = """
 
     <header>
         <h1>منصة مرسين للخدمات</h1>
-        <p>البوابة الرسمية لجلب أحدث الوظائف والخدمات في مرسين</p>
+        <p>البوابة المحدثة تلقائياً من مجموعات واتساب</p>
     </header>
 
     <div class="container">
@@ -156,75 +153,77 @@ html_template = """
         <!-- شريط التحكم والتصفية -->
         <div class="controls-bar">
             <div class="filter-buttons">
-                <button class="filter-btn active" onclick="filterJobs('all', this)">الكل</button>
-                <button class="filter-btn" onclick="filterJobs('مطعم', this)">مطاعم ومقاهي</button>
-                <button class="filter-btn" onclick="filterJobs('مبيعات', this)">مبيعات وتسويق</button>
-                <button class="filter-btn" onclick="filterJobs('عامل', this)">عمالة ومهن</button>
+                <button class="filter-btn active" onclick="filterServices('all', this)">الكل</button>
+                <button class="filter-btn" onclick="filterServices('معاملات', this)">معاملات وإقامات</button>
+                <button class="filter-btn" onclick="filterServices('صيانة', this)">صيانة منزلية</button>
+                <button class="filter-btn" onclick="filterServices('توصيل', this)">توصيل ونقل</button>
+                <button class="filter-btn" onclick="filterServices('عام', this)">خدمات عامة</button>
             </div>
-            <button class="btn-refresh" onclick="fetchJobs()">🔄 تحديث الوظائف</button>
+            <button class="btn-refresh" onclick="fetchServices()">🔄 تحديث القائمة</button>
         </div>
 
-        <div id="jobsList">
-            <p style="text-align: center; color: #64748b;">جاري تحميل أحدث الوظائف...</p>
+        <div id="servicesList">
+            <p style="text-align: center; color: #64748b;">جاري تحميل الخدمات...</p>
         </div>
 
-        <!-- 💰 مساحة إعلانية سفلية -->
+        <!-- 💰 م��احة إعلانية سفلية -->
         <div class="ad-banner" style="margin-top: 2rem;">
             <span>[مساحة إعلانية - AdBanner Footer]</span>
         </div>
     </div>
 
     <script>
-        let allJobs = [];
+        let allServices = [];
 
-        async function fetchJobs() {
+        async function fetchServices() {
             try {
-                const response = await fetch('/api/jobs');
-                allJobs = await response.json();
-                displayJobs(allJobs);
+                const response = await fetch('/api/services');
+                allServices = await response.json();
+                displayServices(allServices);
             } catch (e) {
-                console.error('Error fetching jobs:', e);
+                console.error('Error fetching services:', e);
             }
         }
 
-        function displayJobs(jobs) {
-            const container = document.getElementById('jobsList');
+        function displayServices(services) {
+            const container = document.getElementById('servicesList');
             
-            if (!jobs || jobs.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد وظائف مضافة حالياً...</p>';
+            if (!services || services.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #64748b;">لا توجد خدمات مضافة حالياً...</p>';
                 return;
             }
 
             container.innerHTML = '';
-            jobs.forEach(job => {
+            services.forEach(service => {
                 const card = document.createElement('div');
                 card.className = 'job-card';
                 card.innerHTML = `
-                    <div class="job-title">${job.title}</div>
-                    <div>${job.details}</div>
-                    <div class="job-time">📅 وقت النشر: ${job.timestamp}</div>
+                    <div class="job-title">${service.title}</div>
+                    <div>${service.details}</div>
+                    <div class="job-time">📅 التوقيت: ${service.timestamp}</div>
                     <div class="job-actions">
-                        <a href="https://wa.me/?text=` + encodeURIComponent('فرصة عمل جديدة عبر منصة مرسين للخدمات:\n' + job.title + '\n' + job.details) + `" class="btn-action btn-share" target="_blank">📤 مشاركة الإعلان</a>
-                        <a href="https://wa.me/" class="btn-action" target="_blank">💬 التواصل السريع</a>
+                        <a href="https://wa.me/?text=` + encodeURIComponent('خدمة عبر منصة مرسين:\n' + service.title + '\n' + service.details) + `" class="btn-action btn-share" target="_blank">📤 مشاركة</a>
+                        <a href="https://wa.me/" class="btn-action" target="_blank">💬 التواصل</a>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function filterJobs(keyword, btn) {
+        function filterServices(category, btn) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
 
-            if (keyword === 'all') {
-                displayJobs(allJobs);
+            if (category === 'all') {
+                displayServices(allServices);
             } else {
-                const filtered = allJobs.filter(job => job.details.includes(keyword) || job.title.includes(keyword));
-                displayJobs(filtered);
+                const filtered = allServices.filter(service => service.category === category);
+                displayServices(filtered);
             }
         }
 
-        fetchJobs();
+        fetchServices();
+        setInterval(fetchServices, 10000); // تحديث تلقائي كل 10 ثوانٍ
     </script>
 </body>
 </html>
@@ -234,9 +233,23 @@ html_template = """
 def index():
     return render_template_string(html_template)
 
-@app.route('/api/jobs')
-def get_jobs():
-    return jsonify(jobs_data)
+@app.route('/api/services', methods=['GET'])
+def get_services():
+    return jsonify(services_data)
+
+@app.route('/api/add-service', methods=['POST'])
+def add_service():
+    data = request.json
+    if data and 'title' in data and 'details' in data:
+        new_item = {
+            "title": data['title'],
+            "category": data.get('category', 'عام'),
+            "details": data['details'],
+            "timestamp": "مباشرة من واتساب"
+        }
+        services_data.insert(0, new_item) # إضافة الإعلان الجديد في أعلى القائمة
+        return jsonify({"status": "success"}), 201
+    return jsonify({"status": "error"}), 400
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)
